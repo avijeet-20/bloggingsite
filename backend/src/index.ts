@@ -65,23 +65,19 @@ app.post('api/v1/user/signin', async (c) => {
   const body = await c.req.json();
 
   const password = await digestMessage(body.password);
-
-   try{
-    const user = await prisma.user.findUnique({where:{
+    
+  const user = await prisma.user.findUnique({where:{
       email:body.email,
       password:password
     }})
+    if(!user){
+      return c.json({message:"error while singing in"})
+    }
+    
     const jwt = sign({id:user?.id},c.env.JWT_SECRET);
 
-    return c.json({message:"singing success"})
-
-   }catch(e){
-    return c.json({message:"error while signing in"})
-   }
-
-
-
-  return c.text('hello')
+    return c.json({jwt});
+    
 })
 
 app.post('api/v1/blog',(c) => {
