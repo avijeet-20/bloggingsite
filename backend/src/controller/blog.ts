@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { decode, sign, verify } from 'hono/jwt'
 import dotenv from 'dotenv';
+import { createPostInput, updatePostInput } from 'rohitraj/dist/types';
 
 
 
@@ -40,6 +41,13 @@ blog.post('/', async (c) => {
     
     const body = await c.req.json();
     const user = c.get('userId');
+
+    const zodSchema = createPostInput.safeParse(body);
+
+if(!zodSchema.success){
+  c.status(422)
+  return c.json({msg:'incorrect inputs!'})
+}
     console.log(user);
 
     try{
@@ -66,7 +74,13 @@ blog.put('/' , async (c) => {
 
     const body = await c.req.json();
     const user = c.get('userId');
+    const zodSchema = updatePostInput.safeParse(body);
 
+    if(!zodSchema.success){
+      c.status(422)
+      return c.json({msg:'incorrect inputs!'})
+    }
+    
     try{
         const updated = await prisma.post.update({
             where:{

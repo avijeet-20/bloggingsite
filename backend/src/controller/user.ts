@@ -4,6 +4,7 @@ import { withAccelerate } from '@prisma/extension-accelerate'
 import { decode, sign, verify } from 'hono/jwt'
 import dotenv from 'dotenv';
 import { signing } from 'hono/utils/jwt/jws';
+import {siginInput, signupInput} from '../../node_modules/rohitraj/dist/types'
 //reading the .env file
  
 export  const user = new Hono<{
@@ -27,6 +28,7 @@ async function digestMessage(message:string) {
 }
 
 
+
 user.post('signin', async (c) => {
   const prisma = await new PrismaClient({
     datasourceUrl:c.env.DATABASE_URL,
@@ -34,6 +36,12 @@ user.post('signin', async (c) => {
 
   const body = await c.req.json();
  
+const zodSchema = siginInput.safeParse(body);
+
+if(!zodSchema.success){
+  c.status(422)
+  return c.json({msg:'incorrect inputs!'})
+}
 
   const password = await digestMessage(body.password);
 
@@ -64,7 +72,12 @@ user.post('signup', async (c) => {
   }).$extends(withAccelerate());
   
   const body = await c.req.json();
+  const zodSchema = signupInput.safeParse(body);
 
+  if(!zodSchema.success){
+    c.status(422)
+    return c.json({msg:"incorrect inputs!"})
+  }
   
 const digestHex = await digestMessage(body.password)
  console.log(digestHex)
