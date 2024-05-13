@@ -22,14 +22,14 @@ export  const blog = new Hono<{
  
     const jwt = c.req.header("authorization") || "" ;
     console.log(jwt);
-    const token = jwt.split(" ")[1];
-    console.log(token)
-    const decoded = await verify(token ,c.env.JWT_SECRET);
+
+
+    const decoded = await verify(jwt ,c.env.JWT_SECRET);
     const userId = decoded.id;
   
     if(!userId){
       c.status(403);
-      return c.json({message:"user not authorized"})
+      return c.json({message:"user not logged in"})
     }else{
       c.set('userId',userId);
       await next();
@@ -48,6 +48,7 @@ if(!zodSchema.success){
   c.status(422)
   return c.json({msg:'incorrect inputs!'})
 }
+
     console.log(user);
 
     try{
@@ -55,13 +56,15 @@ if(!zodSchema.success){
             data:{
             title:body.title,
             content: body.content,
-            authorId: user
+            authorId: user,
          }})
          console.log(created.id);
-         return c.json({message: "blogpost created succeessfully"})
+         return c.json({created})
         
         }catch(e){
-            return c.json({message:"something went wrong! see logs for more details"})
+            return c.json({message:"something went wrong! see logs for more details",
+                
+            })
         }
  
   })
@@ -104,9 +107,20 @@ blog.put('/' , async (c) => {
     }).$extends(withAccelerate());
 
     try{
-        const posts = await prisma.post.findMany();
+        const posts = await prisma.post.findMany({
+            select:{
+                content:true,
+                title:true,
+                id:true,
+                author:{
+                    select:{
+                        name:true
+                    }
+                }
+            }
+        });
         console.log(posts)
-        return c.json(posts);
+        return c.json({posts});
     }catch(e){
         console.log(e)
         return c.json({message:"error fetching the blogs! see logs for more details"})
@@ -124,7 +138,17 @@ blog.get('/:id', async (c) => {
     try{
         const found = await prisma.post.findUnique({where:{
             id:id,
-        }})
+        },
+    select:{
+        id:true,
+        title:true,
+        content:true,
+        author:{
+            select:{
+                name:true
+            }
+        }
+    }})
         return c.json(found);
     }catch(e){
         console.log(e);

@@ -59,9 +59,7 @@ if(!zodSchema.success){
     console.log(c.req.header);
     console.log(c.req.header('authorization'));
 
-    return c.json({msg:"signinsuccessfull",
-      token: "Bearer " + jwt
-    })
+    return c.text(jwt);
 
 })
 
@@ -72,8 +70,9 @@ user.post('signup', async (c) => {
   }).$extends(withAccelerate());
   
   const body = await c.req.json();
+  console.log(body);
   const zodSchema = signupInput.safeParse(body);
-
+console.log(zodSchema)
   if(!zodSchema.success){
     c.status(422)
     return c.json({msg:"incorrect inputs!"})
@@ -91,10 +90,8 @@ const digestHex = await digestMessage(body.password)
     })
      
     const jwt = await sign({id:creatadUser.id},c.env.JWT_SECRET)
-    return c.json({
-      message: "user created successfully",
-      token :  jwt
-    })
+  
+    return c.text(jwt);
     
  }catch(e){
   console.log(e)

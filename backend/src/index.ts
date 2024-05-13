@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { decode, sign, verify } from 'hono/jwt'
 import dotenv from 'dotenv';
-
+import { cors } from 'hono/cors'
 import { user } from './controller/user';
 import { blog } from './controller/blog';
 //reading the .env file
@@ -17,6 +17,7 @@ const app = new Hono<{
   }
 }>();
 
+app.use('/api/*', cors())
 
 app.route('/api/v1/user',user)
 app.route('/api/v1/blog',blog)
