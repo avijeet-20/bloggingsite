@@ -5,7 +5,6 @@ node_compat = true
 
 [vars]
 
-
 # [vars]
 # MY_VAR = "my-variable"
 
